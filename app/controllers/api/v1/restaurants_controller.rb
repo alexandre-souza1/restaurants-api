@@ -1,5 +1,5 @@
-class Api::V1::RestaurantsController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:index, :show]
+class Api::V1::RestaurantsController < Api::V1::BaseController
+  acts_as_token_authentication_handler_for User, except: [ :index, :show ]
   before_action :set_restaurant, only: [:show, :update]
 
   def index
@@ -13,7 +13,7 @@ class Api::V1::RestaurantsController < ApplicationController
     if @restaurant.update(restaurant_params)
       render :show
     else
-      render json: {message: 'se fudeu'}
+      render_error
     end
   end
 
@@ -26,5 +26,10 @@ class Api::V1::RestaurantsController < ApplicationController
 
   def restaurant_params
     params.require(:restaurant).permit(:name, :address)
+  end
+
+  def render_error
+    render json: { errors: @restaurant.errors.full_messages },
+      status: :unprocessable_entity
   end
 end
